@@ -1,8 +1,11 @@
 import express from "express";
 import cors from "cors";
 import type { CreateLinkRequest } from "@url-shortener/shared";
+import "dotenv/config";
 
 const app = express();
+
+const PORT = process.env.PORT || 3000;
 
 app.use(
   cors({
@@ -13,6 +16,7 @@ app.use(
 app.use(express.json());
 
 app.get("/health", (req, res) => {
+  console.log(PORT);
   res.json({ ok: true });
 });
 
@@ -24,7 +28,6 @@ app.get("/:code", (req, res) => {
   res.redirect(302, "https://example.com");
 });
 
-const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`running on http://localhost:${PORT}`);
 });
