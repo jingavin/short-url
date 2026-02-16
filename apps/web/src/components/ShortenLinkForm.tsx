@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link2 } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +12,7 @@ type ShortenLinkFormProps = {
 export function ShortenLinkForm({ onShorten, isLoading }: ShortenLinkFormProps) {
   const [url, setUrl] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault();
     const trimmed = url.trim();
     if (!trimmed) return;

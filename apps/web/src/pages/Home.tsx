@@ -6,17 +6,17 @@ export default function Home() {
     {
       id: 1,
       original: "https://dribbble.com/shots/2349812-clean-ui-design",
-      short: "shrt.co/xyz892",
+      short: "urltinyr.com/abc123",
     },
     {
       id: 2,
       original: "https://amazon.com/dp/B08X9Y5Z7Q/ref=something",
-      short: "shrt.co/amz22",
+      short: "urltinyr.com/amz22",
     },
     {
       id: 3,
       original: "https://medium.com/@username/how-to-build-a-saas",
-      short: "shrt.co/med99",
+      short: "urltinyr.com/med99",
     },
   ];
 
@@ -42,9 +42,11 @@ export default function Home() {
     <div className="min-h-screen bg-muted/30">
       <section className="max-w-4xl mx-auto px-4 pt-20 text-center">
         <h1 className="text-5xl font-extrabold tracking-tight">
+          <span className="text-blue-600">tinyr.</span>
+          <br />
           Shorten your links.
           <br />
-          <span className="text-blue-600">Share with ease.</span>
+          Share with ease.
         </h1>
 
         <p className="mt-4 text-muted-foreground text-lg">
