@@ -63,6 +63,11 @@ export default function Home() {
           Paste a long link to shorten it instantly.
         </p>
 
+        <p className="mt-4 text-sm text-muted-foreground/80">
+          No account required. No tracking. Your links are stored anonymously and remain private to your browser
+          session.
+        </p>
+
         <ShortenLinkForm />
       </section>
 
