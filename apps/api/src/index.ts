@@ -134,6 +134,7 @@ app.get("/api/links/recent", async (req, res) => {
 
   const rows = await db
     .select({
+      id: links.id,
       code: links.code,
       longUrl: links.longUrl,
       createdAt: links.createdAt,
@@ -143,8 +144,19 @@ app.get("/api/links/recent", async (req, res) => {
     .orderBy(desc(links.createdAt))
     .limit(20);
 
-  res.json(rows);
+  const baseUrl = (process.env.LIVE_URL ?? `http://localhost:${PORT}/`).replace(/\/?$/, "/");
+
+  console.log(rows);
+  res.json(
+    rows.map((r) => ({
+      id: r.id,
+      original: r.longUrl,
+      short: `${baseUrl}${r.code}`,
+      createdAt: r.createdAt,
+    }))
+  );
 });
+
 
 app.get("/:code", async (req, res) => {
   const { code } = req.params;
