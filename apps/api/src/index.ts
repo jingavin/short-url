@@ -99,8 +99,8 @@ app.post(
       ]);
 
       return res.status(200).json({
-        code: cachedCode,
-        shortUrl: baseUrl + cachedCode,
+        code,
+        shortUrl: baseUrl + code,
       });
     }
 
@@ -115,11 +115,10 @@ app.post(
           redis.set(codeKey(code), longUrl, { EX: LINK_TTL }),
         ]);
 
-        return res.status(200).json({
-          code: cachedCode,
-          shortUrl: baseUrl + cachedCode,
+        return res.status(201).json({
+          code,
+          shortUrl: baseUrl + code,
         });
-
       } catch (err) {
         if (attempt < 9) continue;
         return res.status(500).json({ error: "Failed to create short link" });
@@ -146,7 +145,7 @@ app.get("/api/links/recent", async (req, res) => {
 
   const baseUrl = (process.env.LIVE_URL ?? `http://localhost:${PORT}/`).replace(/\/?$/, "/");
 
-  console.log(rows);
+  // console.log(rows);
   res.json(
     rows.map((r) => ({
       id: r.id,
