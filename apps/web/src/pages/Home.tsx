@@ -42,11 +42,11 @@ export default function Home() {
     <div className="min-h-screen bg-muted/30">
       <section className="max-w-4xl mx-auto px-4 pt-20 text-center">
         <h1 className="text-5xl font-extrabold tracking-tight">
-          <span className="text-blue-600">tinyr.</span>
+          <span className="text-blue-600">tinyr</span>
           <br />
-          Shorten your links.
+          Shorten your links
           <br />
-          Share with ease.
+          Share with ease
         </h1>
 
         <p className="mt-4 text-muted-foreground text-lg">
@@ -55,7 +55,11 @@ export default function Home() {
           Paste a long link to shorten it instantly.
         </p>
 
-        <ShortenLinkForm onShorten={handleShorten} />
+        <ShortenLinkForm
+          onCreated={(data) => {
+            navigator.clipboard.writeText(data.shortUrl);
+          }}
+        />
       </section>
 
       <RecentLinksTable links={mockLinks} onClear={handleClear} onCopy={handleCopy} onDelete={handleDelete} />

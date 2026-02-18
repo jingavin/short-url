@@ -1,22 +1,38 @@
 import { useState } from "react";
 import { Link2 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { createLink } from "@/lib/api";
 
 type ShortenLinkFormProps = {
-  onShorten?: (longUrl: string) => void;
-  isLoading?: boolean;
+  onCreated?: (data: { code: string; longUrl: string; shortUrl: string }) => void;
 };
 
-export function ShortenLinkForm({ onShorten, isLoading }: ShortenLinkFormProps) {
+export function ShortenLinkForm({ onCreated }: ShortenLinkFormProps) {
   const [url, setUrl] = useState("");
+  const qc = useQueryClient();
 
-  function handleSubmit(e: React.SubmitEvent) {
+  const mutation = useMutation({
+    mutationFn: createLink,
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["links"] });
+
+      // add toast later
+      onCreated?.(data);
+
+      setUrl("");
+    },
+  });
+
+  function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     const trimmed = url.trim();
     if (!trimmed) return;
-    onShorten?.(trimmed);
+
+    mutation.mutate(trimmed);
   }
 
   return (
@@ -33,10 +49,17 @@ export function ShortenLinkForm({ onShorten, isLoading }: ShortenLinkFormProps) 
             />
           </div>
 
-          <Button type="submit" size="lg" className="h-12 px-6 bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
-            {isLoading ? "Shortening..." : "Shorten"}
+          <Button
+            type="submit"
+            size="lg"
+            className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={mutation.isPending}
+          >
+            {mutation.isPending ? "Shortening..." : "Shorten"}
           </Button>
         </form>
+
+        {mutation.isError ? <p className="mt-2 text-sm text-red-600">{(mutation.error as Error).message}</p> : null}
       </CardContent>
     </Card>
   );
