@@ -2,13 +2,21 @@ import express from "express";
 import cors from "cors";
 import type { CreateLinkRequest } from "@url-shortener/shared";
 import "dotenv/config";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { db } from "./db/client";
 import { links } from "./db/schema";
 import { randomCode } from "./lib/code";
 import { connectRedis, redis } from "./lib/redis";
+import cookieParser from "cookie-parser";
+import { visitorMiddleware } from "./middleware/visitor";
 
 const app = express();
+app.use((req, _res, next) => {
+  console.log("INCOMING:", req.method, req.url);
+  next();
+});
+
+app.set("trust proxy", 1);
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
@@ -17,10 +25,15 @@ const LIVE_URL = process.env.LIVE_URL;
 app.use(
   cors({
     origin: "http://localhost:5173",
+    credentials: true,
   })
 );
 
 app.use(express.json());
+app.use(cookieParser());
+
+// cookie middleware
+app.use(visitorMiddleware);
 
 
 function isValidHttpUrl(value: string) {
@@ -38,7 +51,13 @@ app.get("/health", (req, res) => {
   res.json({ ok: true });
 });
 
+// generate session
+app.get("/api/session", (req, res) => {
+  res.json({ ok: true, visitorId: (req as any).visitorId });
+});
+
 app.post("/api/links", async (req, res) => {
+  const visitorId = (req as any).visitorId as string;
   const longUrl = String(req.body?.longUrl ?? "").trim();
 
   if (!longUrl) return res.status(400).json({ error: "longUrl is required" });
@@ -51,7 +70,8 @@ app.post("/api/links", async (req, res) => {
     const code = randomCode(7);
 
     try {
-      await db.insert(links).values({ code, longUrl });
+      await db.insert(links).values({ code, longUrl, visitorId });
+
       return res.status(201).json({
         code,
         shortUrl: `http://localhost:${PORT}/${code}`,
@@ -61,6 +81,23 @@ app.post("/api/links", async (req, res) => {
       return res.status(500).json({ error: "Failed to create short link" });
     }
   }
+});
+
+app.get("/api/links/recent", async (req, res) => {
+  const visitorId = (req as any).visitorId as string;
+
+  const rows = await db
+    .select({
+      code: links.code,
+      longUrl: links.longUrl,
+      createdAt: links.createdAt,
+    })
+    .from(links)
+    .where(and(eq(links.visitorId, visitorId), eq(links.deleted, false)))
+    .orderBy(desc(links.createdAt))
+    .limit(20);
+
+  res.json(rows);
 });
 
 app.get("/:code", async (req, res) => {
