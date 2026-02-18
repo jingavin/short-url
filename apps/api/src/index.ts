@@ -4,6 +4,7 @@ import type { CreateLinkRequest } from "@url-shortener/shared";
 import "dotenv/config";
 
 const app = express();
+app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
@@ -21,6 +22,14 @@ app.get("/health", (req, res) => {
 });
 
 app.post("/api/links", (req, res) => {
+  const longUrl = String(req.body?.longUrl ?? "").trim();
+
+  if (!longUrl) {
+    return res.status(400).json({ error: "longUrl is required" });
+  }
+
+  console.log("user url:", longUrl);
+
   res.json({ code: "abc123" });
 });
 
