@@ -1,7 +1,7 @@
 import type { CreateLinkResponse } from "@url-shortener/shared";
 
-// const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
-const API_BASE = "http://localhost:3000";
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
+// const API_BASE = "http://localhost:3000";
 
 export async function createLink(longUrl: string): Promise<CreateLinkResponse> {
   const res = await fetch(`${API_BASE}/api/links`, {
@@ -20,7 +20,7 @@ export async function createLink(longUrl: string): Promise<CreateLinkResponse> {
 }
 
 export async function fetchRecentLinks() {
-  const res = await fetch("http://localhost:3000/api/links/recent", {
+  const res = await fetch(`${API_BASE}/api/links/recent`, {
     credentials: "include",
   });
 
@@ -28,5 +28,23 @@ export async function fetchRecentLinks() {
     throw new Error("Failed to fetch recent links");
   }
 
+  return res.json();
+}
+
+export async function deleteLink(id: string | number) {
+  const res = await fetch(`${API_BASE}/api/links/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to delete");
+  return res.json();
+}
+
+export async function clearLinks() {
+  const res = await fetch(`${API_BASE}/api/links`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to clear");
   return res.json();
 }

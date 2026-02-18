@@ -28,7 +28,7 @@ const baseUrl = LIVE_URL ?? `http://localhost:${PORT}/`;
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: LIVE_URL || "http://localhost:5173",
     credentials: true,
   })
 );

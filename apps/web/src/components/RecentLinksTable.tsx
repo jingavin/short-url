@@ -36,7 +36,7 @@ export function RecentLinksContainer({ onCopy, onDelete, onClear }: RecentLinksH
 
 export function RecentLinksTable({ links, onClear, onCopy, onDelete }: RecentLinksTableProps) {
   return (
-    <section className="max-w-4xl mx-auto px-4 mt-16">
+    <section className="max-w-4xl mx-auto px-4 mt-16 pb-8">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold">Recent Links</h2>
         <Button variant="link" className="text-blue-600 p-0" onClick={onClear} disabled={links.length === 0}>

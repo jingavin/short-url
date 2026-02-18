@@ -1,5 +1,7 @@
 import { ShortenLinkForm } from "@/components/ShortenLinkForm";
 import { RecentLinksContainer } from "@/components/RecentLinksTable";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteLink, clearLinks } from "@/lib/api";
 
 export default function Home() {
   function handleCopy(short: string) {
@@ -7,12 +9,24 @@ export default function Home() {
     navigator.clipboard.writeText(short);
   }
 
+  const qc = useQueryClient();
+
+  const delMut = useMutation({
+    mutationFn: deleteLink,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["recentLinks"] }),
+  });
+
+  const clearMut = useMutation({
+    mutationFn: clearLinks,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["recentLinks"] }),
+  });
+
   function handleDelete(id: string | number) {
-    console.log("delete:", id);
+    delMut.mutate(id);
   }
 
   function handleClear() {
-    console.log("clear history");
+    clearMut.mutate();
   }
 
   return (
