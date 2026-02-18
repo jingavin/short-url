@@ -22,13 +22,19 @@ app.set("trust proxy", 1);
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
-const LIVE_URL = process.env.LIVE_URL;
 const LINK_TTL = 60 * 60 * 24;
-const baseUrl = LIVE_URL ?? `http://localhost:${PORT}/`;
+const baseUrl =
+  (process.env.LIVE_URL ?? `http://localhost:${PORT}/`).replace(/\/?$/, "/");
+const allowedOrigins = ["http://localhost:5173", "https://urltinyr.com"];
 
 app.use(
   cors({
-    origin: LIVE_URL || "http://localhost:5173",
+    origin: (origin, cb) => {
+      // allow server-to-server / curl / no-origin requests
+      if (!origin) return cb(null, true);
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
@@ -143,9 +149,7 @@ app.get("/api/links/recent", async (req, res) => {
     .orderBy(desc(links.createdAt))
     .limit(20);
 
-  const baseUrl = (process.env.LIVE_URL ?? `http://localhost:${PORT}/`).replace(/\/?$/, "/");
 
-  // console.log(rows);
   res.json(
     rows.map((r) => ({
       id: r.id,
