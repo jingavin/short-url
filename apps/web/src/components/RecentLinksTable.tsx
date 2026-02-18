@@ -51,7 +51,7 @@ export function RecentLinksTable({ links, onClear, onCopy, onDelete }: RecentLin
               <TableRow className="p-10">
                 <TableHead>Original Link</TableHead>
                 <TableHead>Shortened Link</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right pr-6">Actions</TableHead>
               </TableRow>
             </TableHeader>
 
