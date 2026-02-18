@@ -1,12 +1,9 @@
 import type { CreateLinkResponse } from "@url-shortener/shared";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
-// const API_BASE = "http://localhost:3000";
+import { API_BASE_URL } from "@/lib/env";
 
 export async function createLink(longUrl: string): Promise<CreateLinkResponse> {
 
-  console.log(API_BASE);
-  const res = await fetch(`${API_BASE}/api/links`, {
+  const res = await fetch(`${API_BASE_URL}/api/links`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -22,7 +19,7 @@ export async function createLink(longUrl: string): Promise<CreateLinkResponse> {
 }
 
 export async function fetchRecentLinks() {
-  const res = await fetch(`${API_BASE}/api/links/recent`, {
+  const res = await fetch(`${API_BASE_URL}/api/links/recent`, {
     credentials: "include",
   });
 
@@ -34,7 +31,7 @@ export async function fetchRecentLinks() {
 }
 
 export async function deleteLink(id: string | number) {
-  const res = await fetch(`${API_BASE}/api/links/${id}`, {
+  const res = await fetch(`${API_BASE_URL}/api/links/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
@@ -43,7 +40,7 @@ export async function deleteLink(id: string | number) {
 }
 
 export async function clearLinks() {
-  const res = await fetch(`${API_BASE}/api/links`, {
+  const res = await fetch(`${API_BASE_URL}/api/links`, {
     method: "DELETE",
     credentials: "include",
   });

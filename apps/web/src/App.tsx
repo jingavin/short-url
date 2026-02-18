@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import Home from "./pages/Home";
 import { Toaster } from "sonner";
+import { API_BASE_URL } from "@/lib/env";
 
 function App() {
   useEffect(() => {
-    fetch("http://localhost:3000/api/session", {
+    fetch(`${API_BASE_URL}/api/session`, {
       credentials: "include",
     }).catch(() => {});
   }, []);
