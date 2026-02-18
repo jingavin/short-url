@@ -7,7 +7,7 @@ export async function createLink(longUrl: string): Promise<CreateLinkResponse> {
   const res = await fetch(`${API_BASE}/api/links`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    // credentials: "include",
+    credentials: "include",
     body: JSON.stringify({ longUrl }),
   });
 
