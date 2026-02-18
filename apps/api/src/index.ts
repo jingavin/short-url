@@ -10,6 +10,7 @@ import { connectRedis, redis } from "./lib/redis";
 import cookieParser from "cookie-parser";
 import { visitorMiddleware } from "./middleware/visitor";
 import { rateLimit } from "./middleware/rateLimit";
+import { urlKey, codeKey } from "./lib/redisKeys";
 
 const app = express();
 app.use((req, _res, next) => {
@@ -22,6 +23,8 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 const LIVE_URL = process.env.LIVE_URL;
+const LINK_TTL = 60 * 60 * 24;
+const baseUrl = LIVE_URL ?? `http://localhost:${PORT}/`;
 
 app.use(
   cors({
@@ -57,32 +60,74 @@ app.get("/api/session", (req, res) => {
   res.json({ ok: true, visitorId: (req as any).visitorId });
 });
 
-app.post("/api/links", rateLimit({ windowSec: 60, max: 20, keyPrefix: "rl:links:create" }), async (req, res) => {
-  const visitorId = (req as any).visitorId as string;
-  const longUrl = String(req.body?.longUrl ?? "").trim();
+app.post(
+  "/api/links",
+  rateLimit({ windowSec: 60, max: 20, keyPrefix: "rl:links:create" }),
+  async (req, res) => {
+    const visitorId = (req as any).visitorId as string;
+    const longUrl = String(req.body?.longUrl ?? "").trim();
 
-  if (!longUrl) return res.status(400).json({ error: "longUrl is required" });
-  if (!isValidHttpUrl(longUrl)) {
-    return res.status(400).json({ error: "longUrl must start with http:// or https://" });
-  }
+    if (!longUrl) return res.status(400).json({ error: "longUrl is required" });
+    if (!isValidHttpUrl(longUrl)) {
+      return res.status(400).json({ error: "longUrl must start with http:// or https://" });
+    }
 
-  console.log("user url:", longUrl);
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const code = randomCode(7);
+    const cachedCode = await redis.get(urlKey(longUrl));
+    if (cachedCode) {
+      await redis.set(codeKey(cachedCode), longUrl, { EX: LINK_TTL });
 
-    try {
-      await db.insert(links).values({ code, longUrl, visitorId });
 
-      return res.status(201).json({
-        code,
-        shortUrl: `http://localhost:${PORT}/${code}`,
+      return res.status(200).json({
+        code: cachedCode,
+        shortUrl: baseUrl + cachedCode,
       });
-    } catch (err) {
-      if (attempt < 9) continue;
-      return res.status(500).json({ error: "Failed to create short link" });
+
+    }
+
+    const existing = await db
+      .select({ code: links.code, longUrl: links.longUrl })
+      .from(links)
+      .where(and(eq(links.longUrl, longUrl), eq(links.deleted, false)))
+      .limit(1);
+
+    if (existing[0]) {
+      const code = existing[0].code;
+
+      await Promise.all([
+        redis.set(urlKey(longUrl), code, { EX: LINK_TTL }),
+        redis.set(codeKey(code), longUrl, { EX: LINK_TTL }),
+      ]);
+
+      return res.status(200).json({
+        code: cachedCode,
+        shortUrl: baseUrl + cachedCode,
+      });
+    }
+
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const code = randomCode(7);
+
+      try {
+        await db.insert(links).values({ code, longUrl, visitorId });
+
+        await Promise.all([
+          redis.set(urlKey(longUrl), code, { EX: LINK_TTL }),
+          redis.set(codeKey(code), longUrl, { EX: LINK_TTL }),
+        ]);
+
+        return res.status(200).json({
+          code: cachedCode,
+          shortUrl: baseUrl + cachedCode,
+        });
+
+      } catch (err) {
+        if (attempt < 9) continue;
+        return res.status(500).json({ error: "Failed to create short link" });
+      }
     }
   }
-});
+);
+
 
 app.get("/api/links/recent", async (req, res) => {
   const visitorId = (req as any).visitorId as string;
@@ -104,26 +149,24 @@ app.get("/api/links/recent", async (req, res) => {
 app.get("/:code", async (req, res) => {
   const { code } = req.params;
 
-  const cached = await redis.get(`c:${code}`);
-  console.log("REDIS ", cached);
-  if (cached) {
-    return res.redirect(302, cached);
-  }
+  const cached = await redis.get(codeKey(code));
+  console.log("REDIS", cached);
+
+  if (cached) return res.redirect(302, cached);
 
   const row = await db
-    .select()
+    .select({ longUrl: links.longUrl })
     .from(links)
-    .where(eq(links.code, code))
+    .where(and(eq(links.code, code), eq(links.deleted, false)))
     .limit(1);
 
   if (!row[0]) return res.status(404).send("Not found");
 
-  await redis.set(`c:${code}`, row[0].longUrl, {
-    EX: 60 * 60 * 24, // 1 day
-  });
+  await redis.set(codeKey(code), row[0].longUrl, { EX: LINK_TTL });
 
   return res.redirect(302, row[0].longUrl);
 });
+
 
 app.listen(PORT, async () => {
   await connectRedis();
