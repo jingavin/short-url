@@ -6,11 +6,13 @@ import { eq, and } from "drizzle-orm";
 import { db } from "./db/client";
 import { links } from "./db/schema";
 import { randomCode } from "./lib/code";
+import { connectRedis, redis } from "./lib/redis";
 
 const app = express();
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
+const LIVE_URL = process.env.LIVE_URL;
 
 app.use(
   cors({
@@ -61,10 +63,29 @@ app.post("/api/links", async (req, res) => {
   }
 });
 
-app.get("/:code", (req, res) => {
-  res.redirect(302, "https://example.com");
-});
+app.get("/:code", async (req, res) => {
+  const { code } = req.params;
 
-app.listen(PORT, () => {
+  const cached = await redis.get(`c:${code}`);
+  if (cached) {
+    return res.redirect(302, cached);
+  }
+
+  const row = await db
+    .select()
+    .from(links)
+    .where(eq(links.code, code))
+    .limit(1);
+
+  if (!row[0]) return res.status(404).send("Not found");
+
+  await redis.set(`c:${code}`, row[0].longUrl, {
+    EX: 60 * 60 * 24, // 1 day
+  });
+
+  return res.redirect(302, row[0].longUrl);
+});
+app.listen(PORT, async () => {
+  await connectRedis();
   console.log(`running on http://localhost:${PORT}`);
 });
