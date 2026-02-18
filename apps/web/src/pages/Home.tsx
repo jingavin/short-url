@@ -1,36 +1,13 @@
 import { ShortenLinkForm } from "@/components/ShortenLinkForm";
-import { RecentLinksTable, type RecentLink } from "@/components/RecentLinksTable";
+import { RecentLinksContainer } from "@/components/RecentLinksTable";
 
 export default function Home() {
-  const mockLinks: RecentLink[] = [
-    {
-      id: 1,
-      original: "https://dribbble.com/shots/2349812-clean-ui-design",
-      short: "urltinyr.com/abc123",
-    },
-    {
-      id: 2,
-      original: "https://amazon.com/dp/B08X9Y5Z7Q/ref=something",
-      short: "urltinyr.com/amz22",
-    },
-    {
-      id: 3,
-      original: "https://medium.com/@username/how-to-build-a-saas",
-      short: "urltinyr.com/med99",
-    },
-  ];
-
-  function handleShorten(longUrl: string) {
-    // @TODO: hook up TanStack Query mutation later
-    console.log("shorten:", longUrl);
-  }
-
   function handleCopy(short: string) {
     // @TODO: hook up toast later (sonner)
-    navigator.clipboard.writeText(`https://${short}`);
+    navigator.clipboard.writeText(short);
   }
 
-  function handleDelete(id: RecentLink["id"]) {
+  function handleDelete(id: string | number) {
     console.log("delete:", id);
   }
 
@@ -62,7 +39,7 @@ export default function Home() {
         />
       </section>
 
-      <RecentLinksTable links={mockLinks} onClear={handleClear} onCopy={handleCopy} onDelete={handleDelete} />
+      <RecentLinksContainer onCopy={handleCopy} onDelete={handleDelete} onClear={handleClear} />
     </div>
   );
 }

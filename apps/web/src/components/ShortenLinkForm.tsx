@@ -18,7 +18,7 @@ export function ShortenLinkForm({ onCreated }: ShortenLinkFormProps) {
   const mutation = useMutation({
     mutationFn: createLink,
     onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: ["links"] });
+      qc.invalidateQueries({ queryKey: ["recentLinks"] });
 
       // add toast later
       onCreated?.(data);

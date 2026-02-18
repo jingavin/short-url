@@ -18,3 +18,15 @@ export async function createLink(longUrl: string): Promise<CreateLinkResponse> {
 
   return res.json();
 }
+
+export async function fetchRecentLinks() {
+  const res = await fetch("http://localhost:3000/api/links/recent", {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch recent links");
+  }
+
+  return res.json();
+}
