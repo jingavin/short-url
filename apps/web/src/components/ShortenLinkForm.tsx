@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,7 +20,10 @@ export function ShortenLinkForm({ onCreated }: ShortenLinkFormProps) {
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ["recentLinks"] });
 
-      // add toast later
+      toast.success("Link shortened", {
+        description: "Copied to clipboard and ready to share!",
+      });
+      navigator.clipboard.writeText(data.shortUrl);
       onCreated?.(data);
 
       setUrl("");

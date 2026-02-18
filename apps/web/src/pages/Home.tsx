@@ -2,23 +2,40 @@ import { ShortenLinkForm } from "@/components/ShortenLinkForm";
 import { RecentLinksContainer } from "@/components/RecentLinksTable";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteLink, clearLinks } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function Home() {
   function handleCopy(short: string) {
-    // @TODO: hook up toast later (sonner)
     navigator.clipboard.writeText(short);
+
+    toast.success("Copied to clipboard", {
+      description: short,
+    });
   }
 
   const qc = useQueryClient();
 
   const delMut = useMutation({
     mutationFn: deleteLink,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["recentLinks"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["recentLinks"] });
+
+      toast.success("Removed from history", {
+        description: "The link still works but is hidden from your history.",
+      });
+    },
+    onError: () => {
+      toast.error("Delete failed");
+    },
   });
 
   const clearMut = useMutation({
     mutationFn: clearLinks,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["recentLinks"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["recentLinks"] });
+
+      toast.success("History cleared");
+    },
   });
 
   function handleDelete(id: string | number) {
@@ -46,11 +63,7 @@ export default function Home() {
           Paste a long link to shorten it instantly.
         </p>
 
-        <ShortenLinkForm
-          onCreated={(data) => {
-            navigator.clipboard.writeText(data.shortUrl);
-          }}
-        />
+        <ShortenLinkForm />
       </section>
 
       <RecentLinksContainer onCopy={handleCopy} onDelete={handleDelete} onClear={handleClear} />

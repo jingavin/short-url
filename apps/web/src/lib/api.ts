@@ -4,6 +4,8 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
 // const API_BASE = "http://localhost:3000";
 
 export async function createLink(longUrl: string): Promise<CreateLinkResponse> {
+
+  console.log(API_BASE);
   const res = await fetch(`${API_BASE}/api/links`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
