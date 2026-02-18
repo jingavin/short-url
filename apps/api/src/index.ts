@@ -9,6 +9,7 @@ import { randomCode } from "./lib/code";
 import { connectRedis, redis } from "./lib/redis";
 import cookieParser from "cookie-parser";
 import { visitorMiddleware } from "./middleware/visitor";
+import { rateLimit } from "./middleware/rateLimit";
 
 const app = express();
 app.use((req, _res, next) => {
@@ -56,7 +57,7 @@ app.get("/api/session", (req, res) => {
   res.json({ ok: true, visitorId: (req as any).visitorId });
 });
 
-app.post("/api/links", async (req, res) => {
+app.post("/api/links", rateLimit({ windowSec: 60, max: 20, keyPrefix: "rl:links:create" }), async (req, res) => {
   const visitorId = (req as any).visitorId as string;
   const longUrl = String(req.body?.longUrl ?? "").trim();
 
@@ -104,6 +105,7 @@ app.get("/:code", async (req, res) => {
   const { code } = req.params;
 
   const cached = await redis.get(`c:${code}`);
+  console.log("REDIS ", cached);
   if (cached) {
     return res.redirect(302, cached);
   }
@@ -122,6 +124,7 @@ app.get("/:code", async (req, res) => {
 
   return res.redirect(302, row[0].longUrl);
 });
+
 app.listen(PORT, async () => {
   await connectRedis();
   console.log(`running on http://localhost:${PORT}`);
