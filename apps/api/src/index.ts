@@ -169,7 +169,7 @@ app.get("/:code", async (req, res) => {
   const row = await db
     .select({ longUrl: links.longUrl })
     .from(links)
-    .where(and(eq(links.code, code), eq(links.deleted, false)))
+    .where(eq(links.code, code))
     .limit(1);
 
   if (!row[0]) return res.status(404).send("Not found");
@@ -178,6 +178,27 @@ app.get("/:code", async (req, res) => {
 
   return res.redirect(302, row[0].longUrl);
 });
+
+app.delete("/api/links/:id", async (req, res) => {
+  const visitorId = (req as any).visitorId as string;
+  const id = String(req.params.id);
+
+  await db
+    .update(links)
+    .set({ deleted: true })
+    .where(and(eq(links.id, id as any), eq(links.visitorId, visitorId)));
+
+  res.json({ ok: true });
+});
+
+app.delete("/api/links", async (req, res) => {
+  const visitorId = (req as any).visitorId as string;
+
+  await db.update(links).set({ deleted: true }).where(eq(links.visitorId, visitorId));
+
+  res.json({ ok: true });
+});
+
 
 
 app.listen(PORT, async () => {
