@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableHead, TableRow, TableBody, TableCell } from "@/components/ui/table";
 import { useQuery } from "@tanstack/react-query";
 import { fetchRecentLinks } from "@/lib/api";
+import { Loader2 } from "lucide-react";
 
 export type RecentLink = {
   id: string | number;
@@ -28,7 +29,14 @@ export function RecentLinksContainer({ onCopy, onDelete, onClear }: RecentLinksH
     queryFn: fetchRecentLinks,
   });
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading)
+    return (
+      <section className="max-w-4xl mx-auto px-4 mt-16 pb-8">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </section>
+    );
   if (error) return <div>Failed to load links</div>;
 
   return <RecentLinksTable links={data} onCopy={onCopy} onDelete={onDelete} onClear={onClear} />;
