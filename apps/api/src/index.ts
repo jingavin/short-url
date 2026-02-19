@@ -209,6 +209,7 @@ if (process.env.NODE_ENV === "production") {
 
   app.use(express.static(webDist));
 
+  // SPA fallback: must be LAST (after /api and /:code)
   app.get("*", (_req, res) => {
     res.sendFile(path.join(webDist, "index.html"));
   });
