@@ -11,6 +11,8 @@ import cookieParser from "cookie-parser";
 import { visitorMiddleware } from "./middleware/visitor";
 import { rateLimit } from "./middleware/rateLimit";
 import { urlKey, codeKey } from "./lib/redisKeys";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 app.use((req, _res, next) => {
@@ -202,6 +204,15 @@ app.delete("/api/links", async (req, res) => {
   res.json({ ok: true });
 });
 
+if (process.env.NODE_ENV === "production") {
+  const webDist = path.resolve(__dirname, "../../web/dist");
+
+  app.use(express.static(webDist));
+
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(webDist, "index.html"));
+  });
+}
 
 
 app.listen(PORT, async () => {
