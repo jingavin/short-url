@@ -60,25 +60,25 @@ Users paste a long URL → tinyr generates a 7-character short code → short co
 ┌─────────────────────────────────────────────────────────────┐
 │                     Frontend (React + Vite)                 │
 │                    http://localhost:5173                    │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │ • Create short links (POST /api/links)               │  │
-│  │ • View recent links (GET /api/links/recent)          │  │
-│  │ • Delete links (DELETE /api/links/:id)               │  │
-│  │ • Session info (GET /api/session)                    │  │
-│  └──────────────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ • Create short links (POST /api/links)               │   │
+│  │ • View recent links (GET /api/links/recent)          │   │
+│  │ • Delete links (DELETE /api/links/:id)               │   │
+│  │ • Session info (GET /api/session)                    │   │
+│  └──────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
                             ↕
                     HTTPS / CORS / Cookies
                             ↕
 ┌─────────────────────────────────────────────────────────────┐
-│                  Backend (Express + TypeScript)              │
+│                  Backend (Express + TypeScript)             │
 │                    http://localhost:3000                    │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │ • Link shortening logic                              │  │
-│  │ • Code generation & deduplication                    │  │
-│  │ • Rate limiting (Redis)                              │  │
-│  │ • Session management (HttpOnly cookies)              │  │
-│  └──────────────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ • Link shortening logic                              │   │
+│  │ • Code generation & deduplication                    │   │
+│  │ • Rate limiting (Redis)                              │   │
+│  │ • Session management (HttpOnly cookies)              │   │
+│  └──────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
                             ↕
         ┌───────────────────┴───────────────────┐
@@ -250,7 +250,7 @@ npm run db:migrate   # Apply to database
 
 ---
 
-## ��� Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -373,7 +373,7 @@ npm run start      # Runs production build
 
 ---
 
-## ��� Project Structure Reference
+## Project Structure Reference
 
 ```
 tinyr/
